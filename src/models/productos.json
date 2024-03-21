@@ -1,0 +1,13 @@
+[
+  {
+    "title": "Huevo kinder",
+    "description": "Huevo de pascual kinder, grande chocolate negro",
+    "price": 7000,
+    "code": "abc123",
+    "stock": 50,
+    "category": "Golosinas",
+    "status": true,
+    "thumbnails": [],
+    "id": 1
+  }
+]
