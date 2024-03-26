@@ -27,15 +27,19 @@ class CartManager {
   }
 
   async crearCarrito() {
-    const nuevoCarrito = {
-      id: ++this.ultId,
-      products: [],
-    };
+    try {
+      const nuevoCarrito = {
+        id: ++this.ultId,
+        products: [],
+      };
 
-    this.carts.push(nuevoCarrito);
+      this.carts.push(nuevoCarrito);
 
-    await this.guardarCarritos();
-    return nuevoCarrito;
+      await this.guardarCarritos();
+      return nuevoCarrito;
+    } catch (error) {
+      console.log("Error al crear un carrito: ", error);
+    }
   }
 
   async getCarritoById(carritoId) {
