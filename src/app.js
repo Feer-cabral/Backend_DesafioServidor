@@ -6,6 +6,7 @@ const socket = require("socket.io");
 const productsRouter = require("./routes/products.router.js");
 const cartsRouter = require("./routes/carts.router.js");
 const viewsRouter = require("./routes/views.router.js");
+require("./database.js");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -15,31 +16,25 @@ app.engine("handlebars", handlebars.engine());
 app.set("view engine", "handlebars");
 app.set("views", "./src/views");
 
-app.use("/api", productsRouter);
-app.use("/api", cartsRouter);
+app.use("/api/products", productsRouter);
+app.use("/api/carts", cartsRouter);
 app.use("/", viewsRouter);
 
 const server = app.listen(PUERTO, () => {
   console.log(`Escuchando en el http://localhost:${PUERTO}`);
 });
 
-const io = socket(server);
+const MessagesModel = require("./models/message.model.js");
+const io = new socket.Server(server);
 
-const ProductManager = require("./controllers/product-manager.js");
-const productManager = new ProductManager("./src/models/productos.json");
+io.on("connection", (socket) => {
+  console.log("Se ha conectado un usuario");
 
-io.on("connection", async (socket) => {
-  console.log("Se ha conectado un cliente");
+  socket.on("message", async (data) => {
+    await MessagesModel.create(data);
 
-  socket.emit("productos", await productManager.getProducts());
-
-  socket.on("eliminarProducto", async (id) => {
-    await productManager.deleteProduct(id);
-    socket.emit("productos", await productManager.getProducts());
-  });
-
-  socket.on("agregarProducto", async (producto) => {
-    await productManager.addProduct(producto);
-    socket.emit("productos", await productManager.getProducts());
+    const messages = await MessagesModel.find();
+    console.log(messages);
+    io.sockets.emit("message", messages);
   });
 });
