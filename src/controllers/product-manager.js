@@ -18,15 +18,13 @@ class ProductManager {
   }) {
     try {
       if (!title || !description || !price || !code || !stock || !category) {
-        console.log("Todos los campos son obligatorios");
-        return;
+        throw new Error("Todos los campos son obligatorios");
       }
 
       const codigoRepetido = await ProductModel.findOne({ code: code });
 
       if (codigoRepetido) {
-        console.log("El código debe ser único");
-        return;
+        throw new Error("El código debe ser único");
       }
 
       const newProduct = new ProductModel({
@@ -43,16 +41,17 @@ class ProductManager {
 
       await newProduct.save();
     } catch (error) {
-      console.log("Error al agregar producto", error);
+      console.error("Error al agregar producto", error);
       throw error;
     }
   }
-  async getProducts() {
+
+  async getProducts(options, filter) {
     try {
-      const productos = await ProductModel.find();
+      const productos = await ProductModel.paginate(filter, options);
       return productos;
     } catch (error) {
-      console.log("Error al cargar los productos", error);
+      console.error("Error al cargar los productos", error);
       throw error;
     }
   }
@@ -62,14 +61,12 @@ class ProductManager {
       const producto = await ProductModel.findById(id);
 
       if (!producto) {
-        console.log("Producto no encontrado");
-        return null;
-      } else {
-        console.log("Producto encontrado");
-        return producto;
+        throw new Error("Producto no encontrado");
       }
+
+      return producto;
     } catch (error) {
-      console.log("Error al encontrar el producto", error);
+      console.error("Error al encontrar el producto", error);
       throw error;
     }
   }
@@ -78,18 +75,17 @@ class ProductManager {
     try {
       const producto = await ProductModel.findByIdAndUpdate(
         id,
-        productoActualizado
+        productoActualizado,
+        { new: true }
       );
 
       if (!producto) {
-        console.log("No se encontró el producto");
-        return null;
-      } else {
-        console.log("Producto actualizado");
-        return producto;
+        throw new Error("No se encontró el producto");
       }
+
+      return producto;
     } catch (error) {
-      console.log("Error al actualizar el producto", error);
+      console.error("Error al actualizar el producto", error);
       throw error;
     }
   }
@@ -99,14 +95,12 @@ class ProductManager {
       const producto = await ProductModel.findByIdAndDelete(id);
 
       if (!producto) {
-        console.log("No se encontró el producto");
-        return null;
-      } else {
-        console.log("Producto eliminado");
-        return producto;
+        throw new Error("No se encontró el producto");
       }
+
+      return producto;
     } catch (error) {
-      console.log("Error al eliminar el producto", error);
+      console.error("Error al eliminar el producto", error);
       throw error;
     }
   }

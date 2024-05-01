@@ -1,18 +1,52 @@
 const express = require("express");
 const router = express.Router();
 const ProductManager = require("../controllers/product-manager.js");
-const productManager = new ProductManager("./src/models/productos.json");
+const productManager = new ProductManager("./src/models/products.json");
+const ProductModel = require("../models/product.model.js");
 
 router.get("/", async (req, res) => {
   try {
-    const limit = req.query.limit;
-    const productos = await productManager.getProducts();
+    let { limit = 10, page = 1, sort, query } = req.query;
 
-    if (limit) {
-      res.json(productos.slice(0, limit));
-    } else {
-      res.json(productos);
+    const options = {
+      limit: parseInt(limit),
+      page: parseInt(page),
+      sort: sort ? { price: sort === "asc" ? 1 : -1 } : {},
+      populate: "category",
+    };
+
+    let filter = {};
+    if (query) {
+      filter = { category: query };
     }
+
+    // const products = await productManager.getProducts(options, filter);
+
+    const products = await ProductModel.paginate(filter, options);
+
+    const productosResultadoFinal = products.docs.map((p) => {
+      const { _id, ...rest } = p.toObject();
+      return rest;
+    });
+
+    const respuesta = {
+      status: "success",
+      payload: productosResultadoFinal,
+      totalPages: products.totalPages,
+      prevPage: products.hasPrevPage ? page - 1 : null,
+      nextPage: products.hasNextPage ? page + 1 : null,
+      page: page,
+      hasPrevPage: products.hasPrevPage,
+      hasNextPage: products.hasNextPage,
+      prevLink: products.hasPrevPage
+        ? `/api/products?limit=${limit}&page=${page - 1}&sort=${sort}`
+        : null,
+      nextLink: products.hasNextPage
+        ? `/api/products?limit=${limit}&page=${page + 1}&sort=${sort}`
+        : null,
+    };
+
+    res.json(respuesta);
   } catch (error) {
     console.error("Error al obtener productos", error);
     res.status(500).json({
@@ -26,13 +60,14 @@ router.get("/:pid", async (req, res) => {
 
   try {
     const producto = await productManager.getProductById(id);
+
     if (!producto) {
-      return res.json({
+      return res.status(404).json({
         error: "Producto no encontrado",
       });
     }
 
-    res.json(producto);
+    res.render("product-details", { product: producto });
   } catch (error) {
     console.error("Error al obtener producto", error);
     res.status(500).json({
@@ -45,7 +80,9 @@ router.post("/", async (req, res) => {
   const nuevoProducto = req.body;
 
   try {
-    await productManager.addProduct(nuevoProducto);
+    const producto = new ProductModel(nuevoProducto);
+    await producto.save();
+
     res.status(201).json({ message: "Producto agregado exitosamente" });
   } catch (error) {
     res.status(500).json({ error: "Error interno del servidor" });
@@ -54,12 +91,24 @@ router.post("/", async (req, res) => {
 
 router.put("/:pid", async (req, res) => {
   const id = req.params.pid;
-  const productoActualizado = req.body;
+  const nuevoProducto = req.body;
 
   try {
-    await productManager.updateProduct(id, productoActualizado);
+    const productoActualizado = await ProductModel.findByIdAndUpdate(
+      id,
+      nuevoProducto,
+      { new: true }
+    );
+
+    if (!productoActualizado) {
+      return res.status(404).json({
+        error: "Producto no encontrado",
+      });
+    }
+
     res.json({
-      message: "Producto actualizado correctamente",
+      message: "Producto actualizado exitosamente",
+      producto: productoActualizado,
     });
   } catch (error) {
     res.status(500).json({ error: "Error interno del servidor" });
@@ -70,9 +119,17 @@ router.delete("/:pid", async (req, res) => {
   const id = req.params.pid;
 
   try {
-    await productManager.deleteProduct(id);
+    const producto = await ProductModel.findByIdAndDelete(id);
+
+    if (!producto) {
+      return res.status(404).json({
+        error: "Producto no encontrado",
+      });
+    }
+
     res.json({
       message: "Producto eliminado exitosamente",
+      producto,
     });
   } catch (error) {
     res.status(500).json({ error: "Error interno del servidor" });
