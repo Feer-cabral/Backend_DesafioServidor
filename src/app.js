@@ -1,10 +1,10 @@
-const express = require("express");
+import express from "express";
+import handlebars from "express-handlebars";
+import "./database.js";
+import productsRouter from "./routes/product.router.js";
+import cartsRouter from "./routes/cart.router.js";
 const app = express();
-const PUERTO = 8080;
-const handlebars = require("express-handlebars");
-const productsRouter = require("./routes/products.router.js");
-const cartsRouter = require("./routes/carts.router.js");
-require("./database.js");
+const PORT = 8080;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -16,6 +16,6 @@ app.set("views", "./src/views");
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 
-app.listen(PUERTO, () => {
-  console.log(`Escuchando en el http://localhost:${PUERTO}`);
+app.listen(PORT, () => {
+  console.log(`Servidor escuchando en el puerto: ${PORT}`);
 });
