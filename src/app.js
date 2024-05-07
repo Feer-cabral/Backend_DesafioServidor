@@ -1,21 +1,36 @@
-import express from "express";
-import handlebars from "express-handlebars";
-import "./database.js";
-import productsRouter from "./routes/product.router.js";
-import cartsRouter from "./routes/cart.router.js";
+const express = require("express");
 const app = express();
-const PORT = 8080;
+const exphbs = require("express-handlebars");
+const session = require("express-session");
+const PUERTO = 8080;
+require("./database.js");
 
-app.use(express.json());
+const productsRouter = require("./routes/products.router.js");
+const cartsRouter = require("./routes/carts.router.js");
+const viewsRouter = require("./routes/views.router.js");
+const sessionRouter = require("./routes/session.router.js");
+const userRouter = require("./routes/user.router.js");
+
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(
+  session({
+    secret: "secretCoder",
+    resave: true,
+    saveUninitialized: true,
+  })
+);
 
-app.engine("handlebars", handlebars.engine());
+app.engine("handlebars", exphbs.engine());
 app.set("view engine", "handlebars");
 app.set("views", "./src/views");
 
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
+app.use("/api/users", userRouter);
+app.use("/api/sessions", sessionRouter);
+app.use("/", viewsRouter);
 
-app.listen(PORT, () => {
-  console.log(`Servidor escuchando en el puerto: ${PORT}`);
+app.listen(PUERTO, () => {
+  console.log(`Servidor escuchando en el puerto ${PUERTO}`);
 });

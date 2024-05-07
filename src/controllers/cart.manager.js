@@ -1,119 +1,145 @@
-import { CartModel } from "../models/cart.model.js";
+const CartModel = require("../models/cart.model.js");
 
 class CartManager {
-  constructor(path) {
-    this.path = path;
-    this.carts = [];
-  }
-
   async crearCarrito() {
-    const cart = new CartModel({ products: [] });
-
-    if (!cart) {
-      console.log("Error al crear el carrito", error);
-      return null;
+    try {
+      const nuevoCarrito = new CartModel({ products: [] });
+      await nuevoCarrito.save();
+      return nuevoCarrito;
+    } catch (error) {
+      console.log("Error al crear el nuevo carrinho de compriñas");
     }
-
-    await cart.save();
-    return cart;
   }
 
-  async listarProductosPorCarrito(cartId) {
-    const cart = await CartModel.findById(cartId);
+  async getCarritoById(cartId) {
+    try {
+      const carrito = await CartModel.findById(cartId);
+      if (!carrito) {
+        console.log("No existe ese carrito con el id");
+        return null;
+      }
 
-    if (!cart) {
-      console.log("Error al mostrar el carrito", error);
-      return null;
+      return carrito;
+    } catch (error) {
+      console.log("Error al traer el carrito, fijate bien lo que haces", error);
     }
-
-    return cart.products;
   }
 
   async agregarProductoAlCarrito(cartId, productId, quantity = 1) {
-    const cart = await CartModel.findById(cartId);
-    const existeProducto = cart.products.find(
-      (p) => p.product.toString() === productId
-    );
+    try {
+      const carrito = await this.getCarritoById(cartId);
+      const existeProducto = carrito.products.find(
+        (item) => item.product.toString() === productId
+      );
 
-    if (existeProducto) {
-      existeProducto.quantity += quantity;
-    } else {
-      cart.products.push({ product: productId, quantity });
+      if (existeProducto) {
+        existeProducto.quantity += quantity;
+      } else {
+        carrito.products.push({ product: productId, quantity });
+      }
+
+      carrito.markModified("products");
+
+      await carrito.save();
+      return carrito;
+    } catch (error) {
+      console.log("error al agregar un producto", error);
     }
-
-    cart.markModified("products");
-    await cart.save();
-    return cart;
   }
 
   async eliminarProductoDelCarrito(cartId, productId) {
-    const cart = await CartModel.findById(cartId);
+    try {
+      const cart = await CartModel.findById(cartId);
 
-    if (!cart) {
-      console.log("No se encontro el carrito", error);
-      return null;
+      if (!cart) {
+        throw new Error("Carrito no encontrado");
+      }
+
+      cart.products = cart.products.filter(
+        (item) => item.product._id.toString() !== productId
+      );
+
+      await cart.save();
+      return cart;
+    } catch (error) {
+      console.error(
+        "Error al eliminar el producto del carrito en el gestor",
+        error
+      );
+      throw error;
     }
-
-    cart.products = cart.products.filter(
-      (p) => p.product.toString() !== productId
-    );
-
-    cart.markModified("products");
-    await cart.save();
-    return cart;
   }
 
-  async actualizarCarrito(cartId, products) {
-    const cart = await CartModel.findById(cartId, { products }, { new: true });
+  async actualizarCarrito(cartId, updatedProducts) {
+    try {
+      const cart = await CartModel.findById(cartId);
 
-    if (!cart) {
-      console.log("No se encontro el carrito", error);
-      return null;
+      if (!cart) {
+        throw new Error("Carrito no encontrado");
+      }
+
+      cart.products = updatedProducts;
+
+      cart.markModified("products");
+
+      await cart.save();
+
+      return cart;
+    } catch (error) {
+      console.error("Error al actualizar el carrito en el gestor", error);
+      throw error;
     }
-
-    cart.markModified("products");
-    await cart.save();
-    return cart;
   }
 
-  async actualizarCantidad(cartId, productId, quantity) {
-    const cart = await CartModel.findById(cartId);
+  async actualizarCantidadDeProducto(cartId, productId, newQuantity) {
+    try {
+      const cart = await CartModel.findById(cartId);
 
-    if (!cart) {
-      console.log("No se encontro el carrito", error);
-      return null;
+      if (!cart) {
+        throw new Error("Carrito no encontrado");
+      }
+
+      const productIndex = cart.products.findIndex(
+        (item) => item.product._id.toString() === productId
+      );
+
+      if (productIndex !== -1) {
+        cart.products[productIndex].quantity = newQuantity;
+
+        cart.markModified("products");
+
+        await cart.save();
+        return cart;
+      } else {
+        throw new Error("Producto no encontrado en el carrito");
+      }
+    } catch (error) {
+      console.error(
+        "Error al actualizar la cantidad del producto en el carrito",
+        error
+      );
+      throw error;
     }
-
-    const product = cart.products.find(
-      (p) => p.product.toString() === productId
-    );
-
-    if (!product) {
-      console.log("No se encontro el producto", error);
-      return null;
-    }
-
-    product.quantity = quantity;
-
-    cart.markModified("products");
-    await cart.save();
-    return cart;
   }
 
   async vaciarCarrito(cartId) {
-    const cart = await CartModel.findByIdAndUpdate(
-      cartId,
-      { products: [] },
-      { new: true }
-    );
+    try {
+      const cart = await CartModel.findByIdAndUpdate(
+        cartId,
+        { products: [] },
+        { new: true }
+      );
 
-    if (!cart) {
-      console.log("No se encontro el carrito", error);
-      return null;
+      if (!cart) {
+        throw new Error("Carrito no encontrado");
+      }
+
+      return cart;
+    } catch (error) {
+      console.error("Error al vaciar el carrito en el gestor", error);
+      throw error;
     }
-
-    return cart;
   }
 }
 
-export default CartManager;
+module.exports = CartManager;

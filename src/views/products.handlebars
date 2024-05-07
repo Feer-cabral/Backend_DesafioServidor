@@ -1,23 +1,29 @@
-<h1>Bienvenidos a mi lista de productos</h1>
+{{#if user}}
+  <header>
+    <p>Bienvenido!, {{user.first_name}} {{user.last_name}}!</p>
+    <p>Rol: {{user.role}} </p>
+    <a href="/api/sessions/logout">Logout</a>
+  </header>
+{{/if}}
 
-{{#each products}}
-  <h2>{{this.title}}</h2>
-  <ul>
-    <li>{{this.description}}</li>
-    <li>${{this.price}}</li>
-    <li>Categoria: {{this.category}}</li>
-  </ul>
-  <button>Agregar al carrito</button>
+<hr />
+
+<h1> Productos </h1>
+{{#each productos}}
+  <div>
+    <h2>{{title}}</h2>
+    <p>{{description}}</p>
+    <p>Price: ${{price}}</p>
+    <p>Category: {{category}} </p>
+    <button> Agregar al Carrito </button>
+  </div>
 {{/each}}
 
-<div>
-  {{#if hasPrevPage}}
-    <a href="/api/products?page={{prevPage}}">Anterior</a>
-  {{/if}}
+{{#if hasNextPage}}
+  <a href="/products?page={{nextPage}}"> Siguiente </a>
+{{/if}}
+{{#if hasPrevPage}}
+  <a href="/products?page={{prevPage}}"> Anterior </a>
+{{/if}}
 
-  {{#if hasNextPage}}
-    <a href="/api/products?page={{nextPage}}">Siguiente</a>
-  {{/if}}
-</div>
-
-<p>Pagina {{currentPage}} de {{totalPages}}</p>
+<p>Pagina {{currentPage}} de {{totalPages}} </p>
