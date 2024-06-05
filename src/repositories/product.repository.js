@@ -40,11 +40,7 @@ class ProductRepository {
 
       return product;
     } catch (error) {
-      if (error.name === "ValidationError") {
-        throw new Error("Error de validación al actualizar el producto");
-      } else {
-        throw new Error("Error al actualizar el producto");
-      }
+      throw new Error("Error al actualizar el producto");
     }
   }
 

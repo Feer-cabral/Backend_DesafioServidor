@@ -35,8 +35,7 @@ class CartRepository {
       await cart.save();
       return cart;
     } catch (error) {
-      // throw new Error("Error al agregar el producto al carrito");
-      console.log(error);
+      throw new Error("Error al agregar el producto al carrito");
     }
   }
 
@@ -59,7 +58,6 @@ class CartRepository {
     }
   }
 
-  // cart.repository.js
   async updateCart(cid, updatedProducts) {
     try {
       const cart = await CartModel.findByIdAndUpdate(cid, updatedProducts, {
@@ -72,18 +70,16 @@ class CartRepository {
 
       return cart;
     } catch (error) {
-      console.log(error);
       throw new Error("Error al actualizar el carrito");
     }
   }
 
-  // cart.repository.js
   async updateCountToProduct(cid, pid, newQuantity) {
     try {
       const cart = await CartModel.findByIdAndUpdate(
         cid,
-        { $set: { "products.$[elem].quantity": newQuantity } }, // Utiliza $set para actualizar la cantidad del producto
-        { new: true, arrayFilters: [{ "elem.product": pid }] } // Filtros para encontrar el producto en el arreglo de productos
+        { $set: { "products.$[elem].quantity": newQuantity } },
+        { new: true, arrayFilters: [{ "elem.product": pid }] }
       );
 
       if (!cart) {
@@ -92,7 +88,6 @@ class CartRepository {
 
       return cart;
     } catch (error) {
-      console.log(error);
       throw new Error(
         "Error al actualizar la cantidad del producto en el carrito"
       );

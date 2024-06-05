@@ -26,7 +26,7 @@ class ProductManager {
       });
 
       await product.save();
-      res.json(product);
+      res.json({ message: "Producto creado con exito", product });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -35,7 +35,7 @@ class ProductManager {
   async getProducts(req, res) {
     try {
       const products = await productService.getProducts();
-      res.json(products);
+      res.json({ message: "Estos son todos los productos listados", products });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -50,7 +50,7 @@ class ProductManager {
       );
 
       if (!product) {
-        return console.log("No se encontro el producto");
+        return res.status(404).json({ error: "Producto no encontrado" });
       }
 
       res.json(product);
@@ -66,7 +66,7 @@ class ProductManager {
         req.body
       );
 
-      res.json(updatedProduct);
+      res.json({ message: "Producto actualizado con exito", updatedProduct });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -75,7 +75,7 @@ class ProductManager {
   async deleteProduct(req, res) {
     try {
       const deleted = await productService.deleteProduct(req.params.id);
-      res.json(deleted);
+      res.json({ message: "Producto eliminado con exito", deleted });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

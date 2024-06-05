@@ -6,7 +6,7 @@ class CartManager {
       const cart = await cartService.addCart({ products: [] });
 
       await cart.save();
-      res.json(cart);
+      res.json({ message: "Carrito creado con exito", cart });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -30,9 +30,9 @@ class CartManager {
         req.params.pid,
         req.body.quantity
       );
-      console.log(cart);
+
       await cart.save();
-      res.json(cart);
+      res.json({ message: "El producto fue agregado al carrito", cart });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -46,33 +46,31 @@ class CartManager {
       );
 
       await cart.save();
-      res.json(cart);
+      res.json({ message: "El producto fue eliminado del carrito", cart });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
   }
 
-  a; // cart.manager.js
   async updateCart(req, res) {
     try {
       const cart = await cartService.updateCart(req.params.cid, req.body);
 
-      res.json(cart);
+      res.json({ message: "Carrito actualizado con exito", cart });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
   }
 
-  // cart.manager.js
   async updateCountToProduct(req, res) {
     try {
       const cart = await cartService.updateCountToProduct(
         req.params.cid,
         req.params.pid,
-        req.body.quantity // Utiliza req.body.quantity en lugar de req.body
+        req.body.quantity
       );
 
-      res.json(cart);
+      res.json({ message: "Cantidad actualizada con exito", cart });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -83,7 +81,9 @@ class CartManager {
       const cart = await cartService.cleanCart(req.params.cid);
 
       await cart.save();
-      res.json(cart);
+      res.json({
+        message: "Todos los productos fueron eliminados del carrito",
+      });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
