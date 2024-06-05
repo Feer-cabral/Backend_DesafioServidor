@@ -11,8 +11,8 @@ const viewsRouter = require("./routes/views.router.js");
 const sessionRouter = require("./routes/session.router.js");
 const userRouter = require("./routes/user.router.js");
 
-app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(
   session({
     secret: "secretCoder",
